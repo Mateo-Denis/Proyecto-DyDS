@@ -16,10 +16,8 @@ import javax.swing.*;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
-import utils.DataBase;
-import utils.SearchResult;
-import utils.WikipediaPageAPI;
-import utils.WikipediaSearchAPI;
+import utils.*;
+
 
 public class MainWindow {
   private JTextField searchField;
@@ -128,7 +126,7 @@ public class MainWindow {
                         text = "<h1>" + sr.title + "</h1>";
                         selectedResultTitle = sr.title;
                         text += searchResultExtract2.getAsString().replace("\\n", "\n");
-                        text = textToHtml(text);
+                        text = HTMLFormatter.textToHtml(text);
                       }
                       searchResultPane.setText(text);
                       searchResultPane.setCaretPosition(0);
@@ -156,7 +154,7 @@ public class MainWindow {
       }
     });
 
-    savedSearchesComboBox.addActionListener(actionEvent -> savedSearchPane.setText(textToHtml(DataBase.getExtract(savedSearchesComboBox.getSelectedItem().toString()))));
+    savedSearchesComboBox.addActionListener(actionEvent -> savedSearchPane.setText(HTMLFormatter.textToHtml(DataBase.getExtract(savedSearchesComboBox.getSelectedItem().toString()))));
 
     JPopupMenu storedInfoPopup = new JPopupMenu();
 
@@ -228,20 +226,6 @@ public class MainWindow {
     System.out.println(DataBase.getExtract("nada"));
   }
 
-  public static String textToHtml(String text) {
 
-    StringBuilder builder = new StringBuilder();
-
-    builder.append("<font face=\"arial\">");
-
-    String fixedText = text
-        .replace("'", "`"); //Replace to avoid SQL errors, we will have to find a workaround..
-
-    builder.append(fixedText);
-
-    builder.append("</font>");
-
-    return builder.toString();
-  }
 
 }

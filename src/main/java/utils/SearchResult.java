@@ -17,5 +17,15 @@ public class SearchResult extends JMenuItem {
         this.snippet = snippet;
     }
 
+    public String getTitle() {
+        return title;
+    }
 
+    public String getPageID() {
+        return pageID;
+    }
+
+    public String getSnippet() {
+        return snippet;
+    }
 }

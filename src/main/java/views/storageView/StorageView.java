@@ -1,20 +1,22 @@
 package views.storageView;
 
+import mainWindow.Main;
 import models.storageModel.IStorageModel;
 import presenters.storagePresenter.IStoragePresenter;
 import presenters.storagePresenter.StoragePresenter;
+import utils.HTMLFormatter;
 import views.storageView.IStorageView;
 
 import javax.swing.*;
 
-public class StorageView implements IStorageView {
+public class StorageView extends JComponent implements IStorageView {
 	private JComboBox<String> savedSearchesComboBox;
 	private JTextPane savedSearchPane;
 	private JPanel storagePanel;
 
 	private final IStoragePresenter presenter;
 
-	public StorageView(IStorageModel model) {
+	public StorageView(IStorageModel model){
 		presenter = new StoragePresenter(this, model);
 
 		savedSearchesComboBox.addActionListener(e -> presenter.onSavedSearchSelected((String) savedSearchesComboBox.getSelectedItem()));
@@ -39,7 +41,7 @@ public class StorageView implements IStorageView {
 
 	@Override
 	public void setSavedSearch(String text) {
-		savedSearchPane.setText(MainWindow.textToHtml(text));
+		savedSearchPane.setText(HTMLFormatter.textToHtml(text));
 	}
 
 	@Override
