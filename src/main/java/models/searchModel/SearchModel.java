@@ -7,9 +7,10 @@ import com.google.gson.JsonObject;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
+import exceptions.WikiAPIRequestException;
 import utils.SearchResult;
-import utils.WikipediaPageAPI;
-import utils.WikipediaSearchAPI;
+import utils.wiki.WikipediaPageAPI;
+import utils.wiki.WikipediaSearchAPI;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class SearchModel implements ISearchModel{
 		pageAPI = retrofit.create(WikipediaPageAPI.class);
 	}
 	@Override
-	public List<SearchResult> searchForTerm(String term) {
+	public List<SearchResult> searchForTerm(String term) throws WikiAPIRequestException {
 		Response<String> callForSearchResponse = null;
 		try {
 			callForSearchResponse = searchAPI.searchForTerm(term + " (Tv series) articletopic:\"television\"").execute();
@@ -49,12 +50,12 @@ public class SearchModel implements ISearchModel{
 			}
 			return results;
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new WikiAPIRequestException(e.getMessage());
 		}
 	}
 
 	@Override
-	public String getExtractByPageID(String pageID) {
+	public String getExtractByPageID(String pageID) throws WikiAPIRequestException {
 		try {
 			Response<String> callForPageResponse = pageAPI.getExtractByPageID(pageID).execute();
 			Gson gson = new Gson();
@@ -65,7 +66,7 @@ public class SearchModel implements ISearchModel{
 			JsonElement searchResultExtract2 = page.get("extract");
 			return searchResultExtract2 != null ? searchResultExtract2.getAsString().replace("\\n", "\n") : "No Results";
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new WikiAPIRequestException(e.getMessage());
 		}
 	}
 }

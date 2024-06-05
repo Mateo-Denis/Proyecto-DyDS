@@ -17,6 +17,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 import utils.*;
+import utils.wiki.WikipediaPageAPI;
+import utils.wiki.WikipediaSearchAPI;
 
 
 public class MainWindow {

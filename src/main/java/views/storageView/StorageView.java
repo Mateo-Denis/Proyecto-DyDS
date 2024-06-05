@@ -1,34 +1,39 @@
 package views.storageView;
 
-import mainWindow.Main;
-import models.storageModel.IStorageModel;
 import presenters.storagePresenter.IStoragePresenter;
 import presenters.storagePresenter.StoragePresenter;
 import utils.HTMLFormatter;
-import views.storageView.IStorageView;
-
 import javax.swing.*;
 
 public class StorageView extends JComponent implements IStorageView {
 	private JComboBox<String> savedSearchesComboBox;
 	private JTextPane savedSearchPane;
 	private JPanel storagePanel;
+	private JPanel container;
+	private IStoragePresenter storagePresenter;
+	private JPopupMenu storedInfoPopup;
 
-	private final IStoragePresenter presenter;
+	public StorageView() {
+		savedSearchPane.setContentType("text/html");
+	}
 
-	public StorageView(IStorageModel model){
-		presenter = new StoragePresenter(this, model);
+	@Override
+	public void setStoragePresenter(StoragePresenter storagePresenter) {
+		this.storagePresenter = storagePresenter;
+	}
 
-		savedSearchesComboBox.addActionListener(e -> presenter.onSavedSearchSelected((String) savedSearchesComboBox.getSelectedItem()));
+	public void start(){
 
-		JPopupMenu storedInfoPopup = new JPopupMenu();
+		savedSearchesComboBox.addActionListener(e -> storagePresenter.onSavedSearchSelected((String) savedSearchesComboBox.getSelectedItem()));
 
-		JMenuItem deleteItem = new JMenuItem("Delete!");
-		deleteItem.addActionListener(e -> presenter.onDeleteSavedSearch((String) savedSearchesComboBox.getSelectedItem()));
+		storedInfoPopup = new JPopupMenu();
+
+		JMenuItem deleteItem = new JMenuItem("Delete saved series");
+		deleteItem.addActionListener(e -> storagePresenter.onDeleteSavedSearch((String) savedSearchesComboBox.getSelectedItem()));
 		storedInfoPopup.add(deleteItem);
 
-		JMenuItem saveItem = new JMenuItem("Save Changes!");
-		saveItem.addActionListener(e -> presenter.onSaveChanges((String) savedSearchesComboBox.getSelectedItem(), savedSearchPane.getText()));
+		JMenuItem saveItem = new JMenuItem("Save changes");
+		saveItem.addActionListener(e -> storagePresenter.onSaveChanges((String) savedSearchesComboBox.getSelectedItem(), savedSearchPane.getText()));
 		storedInfoPopup.add(saveItem);
 
 		savedSearchPane.setComponentPopupMenu(storedInfoPopup);
@@ -48,6 +53,7 @@ public class StorageView extends JComponent implements IStorageView {
 	public void showMessage(String message) {
 		JOptionPane.showMessageDialog(storagePanel, message);
 	}
+
 
 	public JPanel getStoragePanel() {
 		return storagePanel;

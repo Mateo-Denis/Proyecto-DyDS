@@ -1,4 +1,4 @@
-package utils;
+package utils.wiki;
 
 
 import retrofit2.Call;

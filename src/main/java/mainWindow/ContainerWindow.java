@@ -5,22 +5,29 @@ import views.storageView.StorageView;
 
 import javax.swing.*;
 
-public class ContainerWindow extends JFrame{
+public class ContainerWindow{
+	private JFrame windowFrame;
 	private JPanel containerPanel;
 	private JTabbedPane containerTabbedPane;
 	private StorageView storageViewTab;
 	private JPanel StorageTab;
 	private SearchView searchViewTab;
 	private JPanel SearchTab;
-	private StorageView searchView;
 
 	public ContainerWindow() {
-		containerPanel.add(containerTabbedPane);
+		windowFrame = new JFrame("TV Series Info Repo");
+		windowFrame.setContentPane(containerPanel);
+		windowFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		windowFrame.pack();
+		windowFrame.setLocationRelativeTo(null);
+		windowFrame.setVisible(true);
 	}
 
+	public SearchView getSearchViewTab() {
+		return searchViewTab;
+	}
 
-
-
-
-
+	public StorageView getStorageViewTab() {
+		return storageViewTab;
+	}
 }

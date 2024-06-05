@@ -1,29 +1,61 @@
 package views.searchView;
 
-import models.searchModel.ISearchModel;
-import models.storageModel.IStorageModel;
 import presenters.searchPresenter.ISearchPresenter;
-import presenters.searchPresenter.SearchPresenter;
+import utils.wiki.WikiPage;
 
 import javax.swing.*;
 import java.awt.*;
 public class SearchView extends JComponent implements ISearchView {
+
 	private JTextField searchField;
 	private JButton searchButton;
 	private JTextPane searchResultPane;
 	private JButton saveLocallyButton;
 	private JPanel searchPanel;
+	private JPanel container;
+	private ISearchPresenter searchPresenter;
+	private WikiPage currentPage;
 
-	private final ISearchPresenter presenter;
-
-	public SearchView(ISearchModel searchModel, IStorageModel storageModel) {
-		presenter = new SearchPresenter(this, searchModel, storageModel);
-
+	public SearchView() {
 		searchResultPane.setContentType("text/html");
+		searchResultPane.setEditable(false);
+	}
 
-		searchButton.addActionListener(e -> presenter.onSearchButtonClicked(searchField.getText()));
+	public void setSearchPresenter(ISearchPresenter searchPresenter) {
+		this.searchPresenter = searchPresenter;
+	}
 
-		saveLocallyButton.addActionListener(e -> presenter.onSaveLocallyButtonClicked(searchResultPane.getText(), searchField.getText()));
+	@Override
+	public void setSearchTextField(String title) {
+		searchField.setText(title);
+	}
+	@Override
+	public String getSearchTextField() {
+		return searchField.getText();
+	}
+
+	public String getSearchResultHTML() {
+		return searchResultPane.getText();
+	}
+
+	@Override
+	public void setCurrentPage(String title, String extract, String pageID) {
+		currentPage = new WikiPage(title, extract, pageID, 0);
+	}
+
+	@Override
+	public WikiPage getCurrentPage() {
+		return currentPage;
+	}
+
+	public void start(){
+		currentPage = new WikiPage("", "", "", 0);
+		initListeners();
+	}
+	private void initListeners(){
+		searchButton.addActionListener(e -> searchPresenter.onSearchButtonClicked());
+
+		saveLocallyButton.addActionListener(e -> searchPresenter.onSaveLocallyButtonClicked());
 	}
 
 	@Override
