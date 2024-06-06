@@ -36,7 +36,7 @@ public class DataBase {
   private static void createTable(Connection connection, String tableName, String tableDefinition) {
     String createTableSQL = String.format("CREATE TABLE IF NOT EXISTS %s (%s);", tableName, tableDefinition);
     try (Statement statement = connection.createStatement()) {
-      statement.setQueryTimeout(QUERY_TIMEOUT);  // set timeout to QUERY_TIMEOUT sec.
+      statement.setQueryTimeout(QUERY_TIMEOUT);
       statement.executeUpdate(createTableSQL);
       System.out.println("Table " + tableName + " is ready.");
     } catch (SQLException e) {

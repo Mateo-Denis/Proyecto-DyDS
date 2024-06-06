@@ -14,7 +14,17 @@
             <preferred-size width="150" height="50"/>
           </grid>
         </constraints>
-        <properties/>
+        <properties>
+          <background color="-16442064"/>
+          <fixedCellHeight value="50"/>
+          <font name="Akhbar MT" size="20" style="1"/>
+          <foreground color="-1728732"/>
+          <inheritsPopupMenu value="false"/>
+          <selectionBackground color="-13606290"/>
+          <selectionForeground color="-8592123"/>
+          <valueIsAdjusting value="false"/>
+          <verifyInputWhenFocusTarget value="false"/>
+        </properties>
       </component>
     </children>
   </grid>

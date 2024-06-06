@@ -28,7 +28,7 @@ public class Main {
 		searchPresenter.start();
 		StoragePresenter storagePresenter = new StoragePresenter(storageModel, storageView);
 		storagePresenter.start();
-		RatingPresenter ratingPresenter = new RatingPresenter(ratingView, searchView, searchModel, storageModel);
+		RatingPresenter ratingPresenter = new RatingPresenter(ratingView, searchView, searchModel, storageModel, containerWindow);
 		ratingPresenter.start();
 
 		searchView.start();

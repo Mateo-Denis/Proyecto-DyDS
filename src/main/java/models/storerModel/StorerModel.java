@@ -1,6 +1,7 @@
 package models.storerModel;
 
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -177,8 +178,10 @@ public class StorerModel implements IStorerModel {
 
 	public void getRatedSeries() {
 		try {
+			List<RatedWikiPage> listFromDataBase = DataBase.getRatedPages();
+			listFromDataBase.sort(Comparator.reverseOrder());
 			ratedSeries = new DefaultListModel<>();
-			for (RatedWikiPage ratedWikiPage : DataBase.getRatedPages()) {
+			for (RatedWikiPage ratedWikiPage : listFromDataBase) {
 				ratedSeries.addElement(ratedWikiPage);
 			}
 			notifyRatedSeriesWereRetrieved();

@@ -19,11 +19,12 @@ public class RatingPresenter implements IRatingPresenter {
 	private ContainerWindow containerWindow;
 
 
-	public RatingPresenter(IRatingView ratingView, ISearchView searchView, ISearcherModel searcherModel, IStorerModel storerModel) {
+	public RatingPresenter(IRatingView ratingView, ISearchView searchView, ISearcherModel searcherModel, IStorerModel storerModel, ContainerWindow containerWindow) {
 		this.ratingView = ratingView;
 		this.searchView = searchView;
 		this.searcherModel = searcherModel;
 		this.storerModel = storerModel;
+		this.containerWindow = containerWindow;
 	}
 
 	public void start() {
