@@ -2,6 +2,7 @@ package views.searchView;
 
 import presenters.ratingPresenter.RatingPresenter;
 import presenters.searchPresenter.ISearchPresenter;
+import utils.MessageTypes;
 import utils.wiki.RatedWikiPage;
 import utils.wiki.WikiPage;
 import views.storageView.IsRatedImagePanel;
@@ -12,7 +13,7 @@ import java.net.HttpCookie;
 public interface ISearchView {
 	void showSearchResultsPopup(JPopupMenu searchOptionsMenu);
 	void showSearchResult(String text);
-	void showMessage(String title, String message, int messageType);
+	void showMessage(MessageTypes messageType);
 
 	void setWorkingStatus();
 	void setWaitingStatus();

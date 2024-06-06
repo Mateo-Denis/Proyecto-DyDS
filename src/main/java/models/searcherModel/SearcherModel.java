@@ -4,11 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import models.listeners.search.RatedSeriesDoubleClickedListener;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 import utils.exceptions.WikiAPIRequestException;
 import utils.SearchResult;
+import utils.wiki.RatedWikiPage;
 import utils.wiki.WikipediaPageAPI;
 import utils.wiki.WikipediaSearchAPI;
 
@@ -18,6 +20,9 @@ import java.util.List;
 
 public class SearcherModel implements ISearcherModel {
 
+	private final List<RatedSeriesDoubleClickedListener> ratedSeriesDoubleClickedListeners = new ArrayList<>();
+	private List<SearchResult> searchResultsForLastTerm;
+	private String extractForLastPageSearched;
 	private final WikipediaSearchAPI searchAPI;
 	private final WikipediaPageAPI pageAPI;
 
@@ -30,9 +35,22 @@ public class SearcherModel implements ISearcherModel {
 		searchAPI = retrofit.create(WikipediaSearchAPI.class);
 		pageAPI = retrofit.create(WikipediaPageAPI.class);
 	}
+
 	@Override
-	public List<SearchResult> searchForTerm(String term) throws WikiAPIRequestException {
-		Response<String> callForSearchResponse = null;
+	public void addRatedSeriesDoubleClickedListener(RatedSeriesDoubleClickedListener listener) {
+		ratedSeriesDoubleClickedListeners.add(listener);
+	}
+
+	private void notifyRatedSeriesDoubleClickedListeners(RatedWikiPage ratedWikiPage){
+		for (RatedSeriesDoubleClickedListener listener: ratedSeriesDoubleClickedListeners) {
+			listener.onDoubleClick(ratedWikiPage);
+		}
+	}
+
+
+	@Override
+	public void searchForTerm(String term) throws WikiAPIRequestException {
+		Response<String> callForSearchResponse;
 		try {
 			callForSearchResponse = searchAPI.searchForTerm(term + " (Tv series) articletopic:\"television\"").execute();
 			Gson gson = new Gson();
@@ -48,14 +66,18 @@ public class SearcherModel implements ISearcherModel {
 				String searchResultSnippet = searchResult.get("snippet").getAsString();
 				results.add(new SearchResult(searchResultTitle, searchResultPageId, searchResultSnippet));
 			}
-			return results;
+			searchResultsForLastTerm = results;
 		} catch (IOException e) {
 			throw new WikiAPIRequestException(e.getMessage());
 		}
 	}
+	@Override
+	public List<SearchResult> getSearchResultsForLastTerm() {
+		return searchResultsForLastTerm;
+	}
 
 	@Override
-	public String getExtractByPageID(String pageID) throws WikiAPIRequestException {
+	public void getExtractByPageID(String pageID) throws WikiAPIRequestException {
 		try {
 			Response<String> callForPageResponse = pageAPI.getExtractByPageID(pageID).execute();
 			Gson gson = new Gson();
@@ -64,9 +86,18 @@ public class SearcherModel implements ISearcherModel {
 			JsonObject pages = query2.get("pages").getAsJsonObject();
 			JsonObject page = pages.entrySet().iterator().next().getValue().getAsJsonObject();
 			JsonElement searchResultExtract2 = page.get("extract");
-			return searchResultExtract2 != null ? searchResultExtract2.getAsString().replace("\\n", "\n") : "No Results";
+			extractForLastPageSearched = searchResultExtract2 != null ? searchResultExtract2.getAsString().replace("\\n", "\n") : "No Results";
 		} catch (IOException e) {
 			throw new WikiAPIRequestException(e.getMessage());
 		}
+	}
+	@Override
+	public String getExtractOfLastPageSearched() {
+		return extractForLastPageSearched;
+	}
+
+
+	public void searchRatedSeries(RatedWikiPage ratedWikiPage){
+		notifyRatedSeriesDoubleClickedListeners(ratedWikiPage);
 	}
 }

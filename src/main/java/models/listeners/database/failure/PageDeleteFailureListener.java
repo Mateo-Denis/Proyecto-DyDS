@@ -1,4 +1,4 @@
-package models.listeners.failure;
+package models.listeners.database.failure;
 
 public interface PageDeleteFailureListener extends FailedOperation{
 }

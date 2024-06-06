@@ -5,14 +5,14 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-import models.listeners.failure.AccessFailureListener;
-import models.listeners.failure.PageDeleteFailureListener;
-import models.listeners.failure.PageSaveFailureListener;
-import models.listeners.failure.RatingSaveFailureListener;
-import models.listeners.success.PageDeleteSuccessListener;
-import models.listeners.success.PageSaveSuccessListener;
-import models.listeners.success.RatingSaveSuccessListener;
-import models.listeners.success.RatedSearchHasFinishedListener;
+import models.listeners.database.failure.AccessFailureListener;
+import models.listeners.database.failure.PageDeleteFailureListener;
+import models.listeners.database.failure.PageSaveFailureListener;
+import models.listeners.database.failure.RatingSaveFailureListener;
+import models.listeners.database.success.PageDeleteSuccessListener;
+import models.listeners.database.success.PageSaveSuccessListener;
+import models.listeners.database.success.RatingSaveSuccessListener;
+import models.listeners.search.RatedSearchHasFinishedListener;
 import utils.DataBase;
 import utils.wiki.RatedWikiPage;
 
@@ -21,24 +21,24 @@ import javax.swing.*;
 public class StorerModel implements IStorerModel {
 
 
-	private List<AccessFailureListener> accessFailureListeners;
-	private List<PageSaveSuccessListener> saveSuccessListeners;
-	private List<PageSaveFailureListener> saveFailureListeners;
-	private List<PageDeleteSuccessListener> deleteSuccessListeners;
-	private List<PageDeleteFailureListener> deleteFailureListeners;
-	private List<RatingSaveSuccessListener> ratingSaveSuccessListeners;
-	private List<RatingSaveFailureListener> ratingSaveFailureListeners;
-	private List<RatedSearchHasFinishedListener> ratedSearchHasFinishedListeners;
+	private final List<AccessFailureListener> accessFailureListeners;
+	private final List<PageSaveSuccessListener> saveSuccessListeners;
+	private final List<PageSaveFailureListener> saveFailureListeners;
+	private final List<PageDeleteSuccessListener> deleteSuccessListeners;
+	private final List<PageDeleteFailureListener> deleteFailureListeners;
+	private final List<RatingSaveSuccessListener> ratingSaveSuccessListeners;
+	private final List<RatingSaveFailureListener> ratingSaveFailureListeners;
+	private final List<RatedSearchHasFinishedListener> ratedSearchHasFinishedListeners;
 	private DefaultListModel<RatedWikiPage> ratedSeries;
 	public StorerModel() {
-		this.accessFailureListeners = new LinkedList<AccessFailureListener>();
-		this.saveSuccessListeners = new LinkedList<PageSaveSuccessListener>();
-		this.saveFailureListeners = new LinkedList<PageSaveFailureListener>();
-		this.deleteSuccessListeners = new LinkedList<PageDeleteSuccessListener>();
-		this.deleteFailureListeners = new LinkedList<PageDeleteFailureListener>();
-		this.ratingSaveSuccessListeners = new LinkedList<RatingSaveSuccessListener>();
-		this.ratingSaveFailureListeners = new LinkedList<RatingSaveFailureListener>();
-		this.ratedSearchHasFinishedListeners = new LinkedList<RatedSearchHasFinishedListener>();
+		this.accessFailureListeners = new LinkedList<>();
+		this.saveSuccessListeners = new LinkedList<>();
+		this.saveFailureListeners = new LinkedList<>();
+		this.deleteSuccessListeners = new LinkedList<>();
+		this.deleteFailureListeners = new LinkedList<>();
+		this.ratingSaveSuccessListeners = new LinkedList<>();
+		this.ratingSaveFailureListeners = new LinkedList<>();
+		this.ratedSearchHasFinishedListeners = new LinkedList<>();
 	}
 
 	@Override
@@ -210,6 +210,7 @@ public class StorerModel implements IStorerModel {
 						, ratedWikiPage.getRating()
 						, ratedWikiPage.getTimestamp().toString());
 			}
+
 			notifyRatingSaveSuccess();
 		}catch (SQLException e){
 			notifyRatingSaveFailure();

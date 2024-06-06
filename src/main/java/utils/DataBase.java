@@ -17,8 +17,8 @@ public class DataBase {
         System.out.println("The driver name is " + meta.getDriverName());
 
         createTable(connection, "catalog",
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "title TEXT UNIQUE, " +
+                "id INTEGER, " +
+                        "title TEXT PRIMARY KEY, " +
                         "extract TEXT, " +
                         "source INTEGER");
 
@@ -28,6 +28,8 @@ public class DataBase {
                         "rating INTEGER, " +
                         "time TIMESTAMP");
       }
+
+      saveInfo("<NO PAGE SELECTED>", "");
     } catch (SQLException e) {
       System.out.println(e.getMessage());
     }
@@ -162,15 +164,15 @@ public class DataBase {
     connection.close();
   }
   public static void updateRatedPage(int id, String title, int rating, String timestamp) throws SQLException{
-    String sql = "UPDATE rated_pages SET title = ?, rating = ?, time = ? WHERE id = ?";
+    String sql = "UPDATE rated_pages SET id = ?, rating = ?, time = ? WHERE title = ?";
 
     Connection connection = DriverManager.getConnection(URL);
     PreparedStatement pstmt = connection.prepareStatement(sql);
 
-    pstmt.setString(1, title);
+    pstmt.setInt(1, id);
     pstmt.setInt(2, rating);
     pstmt.setString(3, timestamp);
-    pstmt.setInt(4, id);
+    pstmt.setString(4, title);
     pstmt.executeUpdate();
 
     pstmt.close();

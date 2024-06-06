@@ -1,16 +1,18 @@
 package presenters.searchPresenter;
 
+import mainWindow.ContainerWindow;
 import models.searcherModel.ISearcherModel;
 import models.storerModel.IStorerModel;
+import models.listeners.search.RatedSeriesDoubleClickedListener;
 import utils.exceptions.WikiAPIRequestException;
 import utils.HTMLFormatter;
 import utils.SearchResult;
 import utils.wiki.RatedWikiPage;
 import utils.wiki.WikiPage;
 import views.searchView.ISearchView;
+import static utils.MessageTypes.*;
 
 import javax.swing.*;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -19,11 +21,12 @@ public class SearchPresenter implements ISearchPresenter{
 	private final ISearchView searchView;
 	private final ISearcherModel searcherModel;
 	private final IStorerModel storerModel;
-
-	public SearchPresenter(ISearcherModel searcherModel, IStorerModel storerModel, ISearchView searchView) {
+	private ContainerWindow containerWindow;
+	public SearchPresenter(ISearcherModel searcherModel, IStorerModel storerModel, ISearchView searchView, ContainerWindow containerWindow) {
 		this.searcherModel = searcherModel;
 		this.storerModel = storerModel;
 		this.searchView = searchView;
+		this.containerWindow = containerWindow;
 	}
 
 	public void start() {
@@ -32,19 +35,29 @@ public class SearchPresenter implements ISearchPresenter{
 	}
 
 	private void initListeners(){
-		storerModel.addPageSaveSuccessListener(() -> searchView.showMessage("Page saved successfully"
-				, "The searched page was successfully saved into the database"
-				, JOptionPane.INFORMATION_MESSAGE));
-		storerModel.addPageSaveFailureListener(() -> searchView.showMessage("Error while saving page"
-				, "An error occurred while saving the page into the database"
-				, JOptionPane.ERROR_MESSAGE));
-		storerModel.addRatingSaveSuccessListener(() -> searchView.showMessage("Rating saved successfully"
-				, "The rating was successfully saved into the database"
-				, JOptionPane.INFORMATION_MESSAGE));
-		storerModel.addRatingSaveFailureListener(() -> searchView.showMessage("Error while saving rating"
-				, "An error occurred while saving the rating into the database"
-				, JOptionPane.ERROR_MESSAGE));
+		storerModel.addPageSaveSuccessListener(() -> searchView.showMessage(PAGE_SAVE_SUCCESS));
+
+		storerModel.addPageSaveFailureListener(() -> searchView.showMessage(PAGE_SAVE_FAILURE));
+
+		storerModel.addRatingSaveSuccessListener(() -> {
+			searchView.showMessage(RATING_SAVE_SUCCESS);
+			searchView.getIsRatedIndicator().setIsRated(true);
+		});
+
+		storerModel.addRatingSaveFailureListener(() -> searchView.showMessage(RATING_SAVE_FAILURE));
+
+		searcherModel.addRatedSeriesDoubleClickedListener((ratedSeries) -> {
+			try{
+				searchView.setWorkingStatus();
+				callSearchByID(ratedSeries.getTitle(), ratedSeries.getId());
+				containerWindow.getContainerTabbedPane().setSelectedIndex(0);
+			}catch (WikiAPIRequestException e){
+				searchView.showMessage(PAGE_SEARCH_FAILURE);
+			}
+			searchView.setWaitingStatus();
+		});
 	}
+
 
 	@Override
 	public void onSearchButtonClicked() {
@@ -52,7 +65,8 @@ public class SearchPresenter implements ISearchPresenter{
 			searchView.setWorkingStatus();
 			String searchText = searchView.getSearchTextField();
 			try {
-				List<SearchResult> results = searcherModel.searchForTerm(searchText);
+				searcherModel.searchForTerm(searchText);
+				List<SearchResult> results = searcherModel.getSearchResultsForLastTerm();
 				JPopupMenu searchOptionsMenu = new JPopupMenu("Search Results");
 				for (SearchResult sr : results) {
 					JMenuItem menuItem = new JMenuItem(HTMLFormatter.searchResultToHtml(sr));
@@ -61,9 +75,7 @@ public class SearchPresenter implements ISearchPresenter{
 				}
 				searchView.showSearchResultsPopup(searchOptionsMenu);
 			} catch (WikiAPIRequestException e) {
-				searchView.showMessage("Error while searching."
-						, "An error occurred while searching for the term in the Wikipedia API"
-						, JOptionPane.ERROR_MESSAGE);
+				searchView.showMessage(PAGE_SEARCH_FAILURE);
 			}
 			searchView.setWaitingStatus();
 		}).start();
@@ -74,33 +86,33 @@ public class SearchPresenter implements ISearchPresenter{
 		new Thread(() -> {
 			try {
 				searchView.setWorkingStatus();
-				String extract;
-				String selectedResultTitle;
-				String pageID;
-				String textToShow;
-				int rating;
-
-				selectedResultTitle = sr.getTitle();
-				extract = searcherModel.getExtractByPageID(sr.getPageID());
-				pageID = sr.getPageID();
-				textToShow = "<h1>" + sr.getTitle() + "</h1>" + HTMLFormatter.textToHtml(extract);
-				searchView.setCurrentPage(selectedResultTitle, extract, pageID);
-				searchView.showSearchResult(textToShow);
-				rating = storerModel.getRating(pageID);
-				if (rating != -1) {
-					searchView.getIsRatedIndicator().setIsRated(true);
-					searchView.getRatingSlider().setValue(rating);
-				} else {
-					searchView.getIsRatedIndicator().setIsRated(false);
-					searchView.getRatingSlider().setValue(5);
-				}
+				callSearchByID(sr.getTitle(), sr.getPageID());
 				searchView.setWaitingStatus();
 			} catch (WikiAPIRequestException e) {
-				searchView.showMessage("Error while fetching page."
-						, "An error occurred while fetching the page from the Wikipedia API"
-						, JOptionPane.ERROR_MESSAGE);
+				searchView.showMessage(PAGE_SEARCH_FAILURE);
 			}
 		}).start();
+	}
+
+	private void callSearchByID(String title, String pageID) throws WikiAPIRequestException{
+
+		String extract;
+		String textToShow;
+
+		searcherModel.getExtractByPageID(pageID);
+		extract = searcherModel.getExtractOfLastPageSearched();
+
+		textToShow = "<h1>" + title + "</h1>" + HTMLFormatter.textToHtml(extract);
+		searchView.setCurrentPage(title, extract, pageID);
+		searchView.showSearchResult(textToShow);
+		int rating = storerModel.getRating(pageID);
+		if (rating != -1) {
+			searchView.getIsRatedIndicator().setIsRated(true);
+			searchView.getRatingSlider().setValue(rating);
+		} else {
+			searchView.getIsRatedIndicator().setIsRated(false);
+			searchView.getRatingSlider().setValue(5);
+		}
 	}
 
 
@@ -110,8 +122,10 @@ public class SearchPresenter implements ISearchPresenter{
 		searchView.setWorkingStatus();
 		WikiPage pageToSave = searchView.getCurrentPage();
 		String textToSave = searchView.getSearchResultHTML();
-		if (!textToSave.isEmpty()) {
+		if (!pageToSave.getTitle().isEmpty()) {
 			storerModel.saveInfo(pageToSave.getTitle(), textToSave);
+		}else {
+			searchView.showMessage(EMPTY_PAGE_SAVE_ATTEMPT);
 		}
 		searchView.setWaitingStatus();
 	}
@@ -124,16 +138,20 @@ public class SearchPresenter implements ISearchPresenter{
 		searchView.setWorkingStatus();
 
 		pageToSave = searchView.getCurrentPage();
-		rating = searchView.getRatingSlider().getValue();
 
-		ratedPageToSave = new RatedWikiPage(pageToSave.getTitle(),
-				pageToSave.getId(),
-				rating,
-				new Timestamp(System.currentTimeMillis()));
+		if(pageToSave.getTitle().isEmpty()){
+			searchView.showMessage(EMPTY_RATING_SAVE_ATTEMPT);
+		}else {
+			rating = searchView.getRatingSlider().getValue();
 
-		boolean isUpdate = searchView.getIsRatedIndicator().isRated();
-		storerModel.saveRating(ratedPageToSave, isUpdate);
+			ratedPageToSave = new RatedWikiPage(pageToSave.getTitle(),
+					pageToSave.getId(),
+					rating,
+					new Timestamp(System.currentTimeMillis()));
 
+			boolean isUpdate = searchView.getIsRatedIndicator().isRated();
+			storerModel.saveRating(ratedPageToSave, isUpdate);
+		}
 		searchView.setWaitingStatus();
 	}
 

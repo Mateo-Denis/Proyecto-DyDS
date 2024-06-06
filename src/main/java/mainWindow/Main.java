@@ -24,11 +24,11 @@ public class Main {
 		StorageView storageView = containerWindow.getStorageViewTab();
 		RatingView ratingView = containerWindow.getRatingViewTab();
 
-		SearchPresenter searchPresenter = new SearchPresenter(searchModel, storageModel, searchView);
+		SearchPresenter searchPresenter = new SearchPresenter(searchModel, storageModel, searchView, containerWindow);
 		searchPresenter.start();
 		StoragePresenter storagePresenter = new StoragePresenter(storageModel, storageView);
 		storagePresenter.start();
-		RatingPresenter ratingPresenter = new RatingPresenter(ratingView, searchView, searchModel, storageModel, containerWindow);
+		RatingPresenter ratingPresenter = new RatingPresenter(ratingView, searchModel, storageModel);
 		ratingPresenter.start();
 
 		searchView.start();

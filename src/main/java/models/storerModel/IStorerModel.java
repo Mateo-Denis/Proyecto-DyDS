@@ -1,13 +1,13 @@
 package models.storerModel;
 
-import models.listeners.failure.AccessFailureListener;
-import models.listeners.failure.PageDeleteFailureListener;
-import models.listeners.failure.PageSaveFailureListener;
-import models.listeners.failure.RatingSaveFailureListener;
-import models.listeners.success.PageDeleteSuccessListener;
-import models.listeners.success.PageSaveSuccessListener;
-import models.listeners.success.RatedSearchHasFinishedListener;
-import models.listeners.success.RatingSaveSuccessListener;
+import models.listeners.database.failure.AccessFailureListener;
+import models.listeners.database.failure.PageDeleteFailureListener;
+import models.listeners.database.failure.PageSaveFailureListener;
+import models.listeners.database.failure.RatingSaveFailureListener;
+import models.listeners.database.success.PageDeleteSuccessListener;
+import models.listeners.database.success.PageSaveSuccessListener;
+import models.listeners.search.RatedSearchHasFinishedListener;
+import models.listeners.database.success.RatingSaveSuccessListener;
 import utils.wiki.RatedWikiPage;
 
 import javax.swing.*;

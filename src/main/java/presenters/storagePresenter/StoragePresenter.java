@@ -4,7 +4,7 @@ package presenters.storagePresenter;
 import models.storerModel.IStorerModel;
 import views.storageView.IStorageView;
 
-import javax.swing.*;
+import static utils.MessageTypes.*;
 
 public class StoragePresenter implements IStoragePresenter {
 	private IStorageView storageView;
@@ -22,18 +22,14 @@ public class StoragePresenter implements IStoragePresenter {
 	}
 
 	private void initListeners(){
-		storerModel.addAccessFailureListener(() -> storageView.showMessage("Error while accessing database"
-				, "An error occurred while accessing the database"
-				, JOptionPane.ERROR_MESSAGE));
+		storerModel.addAccessFailureListener(() -> storageView.showMessage(ACCESS_FAILURE));
 		storerModel.addPageDeleteSuccessListener(() -> {
-				storageView.showMessage("Page deleted successfully"
-				, "The page was successfully deleted from the database"
-				, JOptionPane.INFORMATION_MESSAGE);
+				storageView.showMessage(PAGE_DELETE_SUCCESS);
 			updateSavedSearches();
+			storageView.resetComboBoxSelection();
+			storageView.setSavedSearch("");
 		});
-		storerModel.addPageDeleteFailureListener(() -> storageView.showMessage("Error while deleting page"
-				, "An error occurred while deleting the page from the database"
-				, JOptionPane.ERROR_MESSAGE));
+		storerModel.addPageDeleteFailureListener(() -> storageView.showMessage(PAGE_DELETE_FAILURE));
 		storerModel.addPageSaveSuccessListener(this::updateSavedSearches);
 	}
 

@@ -10,10 +10,13 @@ import java.awt.event.MouseEvent;
 public class RatingView extends JComponent implements IRatingView{
 	private JPanel ratingTab;
 	private JList<RatedWikiPage> ratedSeriesList;
+	private JScrollPane ratedListScrollPane;
 	private RatedWikiPage ratedSeriesSelected;
 	private IRatingPresenter ratingPresenter;
 
-	public RatingView() {}
+	public RatingView() {
+
+	}
 
 	public void start() {
 		initListeners();
@@ -35,10 +38,8 @@ public class RatingView extends JComponent implements IRatingView{
 		return ratedSeriesList.getSelectedValue();
 	}
 
-	public void setRatedSeriesList(DefaultListModel<RatedWikiPage> listModel){
+	public void setRatedSeriesList(DefaultListModel<RatedWikiPage> listModel) {
 		ratedSeriesList.setModel(listModel);
 		initListeners();
 	}
-
-
 }

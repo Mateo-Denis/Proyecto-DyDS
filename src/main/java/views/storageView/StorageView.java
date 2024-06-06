@@ -3,6 +3,8 @@ package views.storageView;
 import presenters.storagePresenter.IStoragePresenter;
 import presenters.storagePresenter.StoragePresenter;
 import utils.HTMLFormatter;
+import utils.MessageTypes;
+
 import javax.swing.*;
 
 public class StorageView extends JComponent implements IStorageView {
@@ -10,6 +12,7 @@ public class StorageView extends JComponent implements IStorageView {
 	private JTextPane savedSearchPane;
 	private JPanel storagePanel;
 	private JPanel storageTab;
+	private JScrollPane savedSearchScrollPane;
 	private IStoragePresenter storagePresenter;
 	private JPopupMenu storedInfoPopup;
 
@@ -49,12 +52,14 @@ public class StorageView extends JComponent implements IStorageView {
 		savedSearchPane.setText(HTMLFormatter.textToHtml(text));
 	}
 
-	@Override
-	public void showMessage(String title, String message, int messageType) {
-		JOptionPane.showMessageDialog(null, message, title, messageType);
+	public void resetComboBoxSelection() {
+		savedSearchesComboBox.setSelectedIndex(0);
 	}
 
-	public JPanel getStoragePanel() {
-		return storagePanel;
+	@Override
+	public void showMessage(MessageTypes messageType) {
+		JOptionPane.showMessageDialog(null, messageType.getMessage(), messageType.getTitle(), messageType.getMessageType());
 	}
+
+
 }

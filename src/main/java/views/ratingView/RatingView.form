@@ -8,24 +8,31 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="998ab" class="javax.swing.JList" binding="ratedSeriesList">
+      <scrollpane id="b394a" binding="ratedListScrollPane">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="2" anchor="0" fill="3" indent="0" use-parent-layout="false">
-            <preferred-size width="150" height="50"/>
-          </grid>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties>
-          <background color="-16442064"/>
-          <fixedCellHeight value="50"/>
-          <font name="Akhbar MT" size="20" style="1"/>
-          <foreground color="-1728732"/>
-          <inheritsPopupMenu value="false"/>
-          <selectionBackground color="-13606290"/>
-          <selectionForeground color="-8592123"/>
-          <valueIsAdjusting value="false"/>
-          <verifyInputWhenFocusTarget value="false"/>
-        </properties>
-      </component>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="998ab" class="javax.swing.JList" binding="ratedSeriesList">
+            <constraints/>
+            <properties>
+              <autoscrolls value="false"/>
+              <background color="-16442064"/>
+              <dragEnabled value="false"/>
+              <fixedCellHeight value="50"/>
+              <font name="Akhbar MT" size="20" style="1"/>
+              <foreground color="-1728732"/>
+              <inheritsPopupMenu value="false"/>
+              <selectionBackground color="-13606290"/>
+              <selectionForeground color="-8592123"/>
+              <valueIsAdjusting value="false"/>
+              <verifyInputWhenFocusTarget value="false"/>
+            </properties>
+          </component>
+        </children>
+      </scrollpane>
     </children>
   </grid>
 </form>

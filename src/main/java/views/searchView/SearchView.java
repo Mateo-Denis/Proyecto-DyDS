@@ -1,6 +1,7 @@
 package views.searchView;
 
 import presenters.searchPresenter.ISearchPresenter;
+import utils.MessageTypes;
 import utils.wiki.WikiPage;
 import views.storageView.IsRatedImagePanel;
 
@@ -82,9 +83,12 @@ public class SearchView extends JComponent implements ISearchView {
 		searchResultPane.setText(text);
 		searchResultPane.setCaretPosition(0);
 	}
+
 	@Override
-	public void showMessage(String title, String message, int messageType) {
-		JOptionPane.showMessageDialog(null, message, title, messageType);
+	public void showMessage(MessageTypes messageType) {
+		JOptionPane.showMessageDialog(null, messageType.getMessage()
+				, messageType.getTitle()
+				, messageType.getMessageType());
 	}
 
 	@Override
