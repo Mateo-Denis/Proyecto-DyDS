@@ -9,7 +9,7 @@ public class StorageView extends JComponent implements IStorageView {
 	private JComboBox<String> savedSearchesComboBox;
 	private JTextPane savedSearchPane;
 	private JPanel storagePanel;
-	private JPanel container;
+	private JPanel storageTab;
 	private IStoragePresenter storagePresenter;
 	private JPopupMenu storedInfoPopup;
 
@@ -50,10 +50,9 @@ public class StorageView extends JComponent implements IStorageView {
 	}
 
 	@Override
-	public void showMessage(String message) {
-		JOptionPane.showMessageDialog(storagePanel, message);
+	public void showMessage(String title, String message, int messageType) {
+		JOptionPane.showMessageDialog(null, message, title, messageType);
 	}
-
 
 	public JPanel getStoragePanel() {
 		return storagePanel;

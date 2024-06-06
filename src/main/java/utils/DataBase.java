@@ -1,222 +1,200 @@
 package utils;
 
+import utils.wiki.RatedWikiPage;
+
 import java.sql.*;
 import java.util.ArrayList;
 
 public class DataBase {
 
+  private static final String URL = "jdbc:sqlite:./dictionary.db";
+  private static final int QUERY_TIMEOUT = 30;
+
   public static void loadDatabase() {
-    //If the database doesnt exists we create it
-    String url = "jdbc:sqlite:./dictionary.db";
-
-    try (Connection connection = DriverManager.getConnection(url)) {
+    try (Connection connection = DriverManager.getConnection(URL)) {
       if (connection != null) {
-
         DatabaseMetaData meta = connection.getMetaData();
         System.out.println("The driver name is " + meta.getDriverName());
-        //System.out.println("A new database has been created.");
 
-        Statement statement = connection.createStatement();
-        statement.setQueryTimeout(30);  // set timeout to 30 sec.
+        createTable(connection, "catalog",
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "title TEXT UNIQUE, " +
+                        "extract TEXT, " +
+                        "source INTEGER");
 
-        //statement.executeUpdate("create table catalog (id INTEGER PRIMARY KEY AUTOINCREMENT, title string, extract string, source integer)");
-        statement.executeUpdate("create table catalog (id INTEGER, title string PRIMARY KEY, extract string, source integer)");
-        //If the DB was created before, a SQL error is reported but it is not harmfull...
+        createTable(connection, "rated_pages",
+                "id INTEGER PRIMARY KEY, " +
+                        "title TEXT, " +
+                        "rating INTEGER, " +
+                        "time TIMESTAMP");
       }
-
     } catch (SQLException e) {
       System.out.println(e.getMessage());
     }
   }
 
-  public static void testDB()
-  {
-
-    Connection connection = null;
-    try
-    {
-      // create a database connection
-      connection = DriverManager.getConnection("jdbc:sqlite:./dictionary.db");
-      Statement statement = connection.createStatement();
-      statement.setQueryTimeout(30);  // set timeout to 30 sec.
-
-      //statement.executeUpdate("drop table if exists person");
-      //statement.executeUpdate("create table person (id integer, name string)");
-      //statement.executeUpdate("insert into person values(1, 'leo')");
-      //statement.executeUpdate("insert into person values(2, 'yui')");
-      ResultSet rs = statement.executeQuery("select * from catalog");
-      while(rs.next())
-      {
-        // read the result set
-        System.out.println("id = " + rs.getInt("id"));
-        System.out.println("title = " + rs.getString("title"));
-        System.out.println("extract = " + rs.getString("extract"));
-        System.out.println("source = " + rs.getString("source"));
-
-      }
-    }
-    catch(SQLException e)
-    {
-      // if the error message is "out of memory",
-      // it probably means no database file is found
-      System.err.println(e.getMessage());
-    }
-    finally
-    {
-      try
-      {
-        if(connection != null)
-          connection.close();
-      }
-      catch(SQLException e)
-      {
-        // connection close failed.
-        System.err.println(e);
-      }
+  private static void createTable(Connection connection, String tableName, String tableDefinition) {
+    String createTableSQL = String.format("CREATE TABLE IF NOT EXISTS %s (%s);", tableName, tableDefinition);
+    try (Statement statement = connection.createStatement()) {
+      statement.setQueryTimeout(QUERY_TIMEOUT);  // set timeout to QUERY_TIMEOUT sec.
+      statement.executeUpdate(createTableSQL);
+      System.out.println("Table " + tableName + " is ready.");
+    } catch (SQLException e) {
+      System.out.println("Error creating table " + tableName + ": " + e.getMessage());
     }
   }
 
-  public static ArrayList<String> getTitles()
-  {
+  public static ArrayList<String> getTitles() throws SQLException {
     ArrayList<String> titles = new ArrayList<>();
-    Connection connection = null;
-    try
-    {
-      // create a database connection
-      connection = DriverManager.getConnection("jdbc:sqlite:./dictionary.db");
-      Statement statement = connection.createStatement();
-      statement.setQueryTimeout(30);  // set timeout to 30 sec.
+    Connection connection = DriverManager.getConnection(URL);
+    String sql = "SELECT title FROM catalog";
+    PreparedStatement preparedStatement = connection.prepareStatement(sql);
+    ResultSet rs = preparedStatement.executeQuery();
 
-      ResultSet rs = statement.executeQuery("select * from catalog");
-      while(rs.next()) titles.add(rs.getString("title"));
+    while (rs.next()) {
+      titles.add(rs.getString("title"));
     }
-    catch(SQLException e)
-    {
-      // if the error message is "out of memory",
-      // it probably means no database file is found
-      System.err.println(e.getMessage());
-    }
-    finally
-    {
-      try
-      {
-        if(connection != null)
-          connection.close();
-      }
-      catch(SQLException e)
-      {
-        // connection close failed.
-        System.err.println(e);
-      }
-      return titles;
+
+    rs.close();
+    preparedStatement.close();
+    connection.close();
+
+    return titles;
+  }
+  public static void saveInfo(String title, String extract) throws SQLException {
+    Connection connection = DriverManager.getConnection(URL);
+    Statement statement = connection.createStatement();
+    statement.setQueryTimeout(QUERY_TIMEOUT);
+
+    String sql = "REPLACE INTO catalog VALUES (NULL, ?, ?, 1)";
+    PreparedStatement preparedStatement = connection.prepareStatement(sql);
+    preparedStatement.setString(1, title);
+    preparedStatement.setString(2, extract);
+
+    preparedStatement.executeUpdate();
+
+    preparedStatement.close();
+    statement.close();
+    connection.close();
+  }
+
+  public static String getExtract(String title) throws SQLException {
+    String url = "jdbc:sqlite:./dictionary.db";
+    Connection connection = DriverManager.getConnection(url);
+    PreparedStatement preparedStatement = connection.prepareStatement("SELECT extract FROM catalog WHERE title = ?");
+    preparedStatement.setString(1, title);
+    ResultSet rs = preparedStatement.executeQuery();
+
+    if (rs.next()) {
+      String result = rs.getString("extract");
+      rs.close();
+      preparedStatement.close();
+      connection.close();
+      return result;
+    }else {
+      rs.close();
+      preparedStatement.close();
+      connection.close();
+      return null;
     }
   }
 
-  public static void saveInfo(String title, String extract)
-  {
-    Connection connection = null;
-    try
-    {
-      // create a database connection
-      connection = DriverManager.getConnection("jdbc:sqlite:./dictionary.db");
+  public static int getRating(String id) throws SQLException {
+    Connection connection = DriverManager.getConnection(URL);
+    String sql = "SELECT rating FROM rated_pages WHERE id = ?";
+    PreparedStatement preparedStatement = connection.prepareStatement(sql);
+    preparedStatement.setString(1, id);
+    ResultSet rs = preparedStatement.executeQuery();
 
-      Statement statement = connection.createStatement();
-      statement.setQueryTimeout(30);  // set timeout to 30 sec.
-
-      System.out.println("INSERT  " + title + "', '"+ extract);
-
-      statement.executeUpdate("replace into catalog values(null, '"+ title + "', '"+ extract + "', 1)");
-    }
-    catch(SQLException e)
-    {
-      System.err.println("Error saving " + e.getMessage());
-    }
-    finally
-    {
-      try
-      {
-        if(connection != null)
-          connection.close();
-      }
-      catch(SQLException e)
-      {
-        // connection close failed.
-        System.err.println( e);
-      }
+    if (rs.next()) {
+      int result = rs.getInt("rating");
+      rs.close();
+      preparedStatement.close();
+      connection.close();
+      return result;
+    } else {
+      rs.close();
+      preparedStatement.close();
+      connection.close();
+      return -1;
     }
   }
 
-  public static String getExtract(String title)
-  {
-
+  public static void deleteEntry(String title) throws SQLException {
     Connection connection = null;
-    try
-    {
-      // create a database connection
-      connection = DriverManager.getConnection("jdbc:sqlite:./dictionary.db");
-      Statement statement = connection.createStatement();
-      statement.setQueryTimeout(30);  // set timeout to 30 sec.
+    Statement statement = null;
+    PreparedStatement preparedStatement = null;
 
-      ResultSet rs = statement.executeQuery("select * from catalog WHERE title = '" + title + "'" );
-      rs.next();
-      return rs.getString("extract");
-    }
-    catch(SQLException e)
-    {
-      // if the error message is "out of memory",
-      // it probably means no database file is found
-      System.err.println("Get title error " + e.getMessage());
-    }
-    finally
-    {
-      try
-      {
-        if(connection != null)
-          connection.close();
-      }
-      catch(SQLException e)
-      {
-        // connection close failed.
-        System.err.println(e);
-      }
-    }
-    return null;
-  }
+    connection = DriverManager.getConnection(URL);
+    statement = connection.createStatement();
+    statement.setQueryTimeout(QUERY_TIMEOUT);
 
-  public static void deleteEntry(String title)
-  {
+    String sql = "DELETE FROM catalog WHERE title = ?";
+    preparedStatement = connection.prepareStatement(sql);
+    preparedStatement.setString(1, title);
+    preparedStatement.executeUpdate();
 
-    Connection connection = null;
-    try
-    {
-      // create a database connection
-      connection = DriverManager.getConnection("jdbc:sqlite:./dictionary.db");
-      Statement statement = connection.createStatement();
-      statement.setQueryTimeout(30);  // set timeout to 30 sec.
-
-      statement.executeUpdate("DELETE FROM catalog WHERE title = '" + title + "'" );
-
+    if (preparedStatement != null) {
+      preparedStatement.close();
     }
-    catch(SQLException e)
-    {
-      // if the error message is "out of memory",
-      // it probably means no database file is found
-      System.err.println("Get title error " + e.getMessage());
+    if (statement != null) {
+      statement.close();
     }
-    finally
-    {
-      try
-      {
-        if(connection != null)
-          connection.close();
-      }
-      catch(SQLException e)
-      {
-        // connection close failed.
-        System.err.println(e);
-      }
+    if (connection != null) {
+      connection.close();
     }
   }
 
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+  public static void insertRatedPage(int id, String title, int rating, String timestamp) throws SQLException{
+    String sql = "INSERT INTO rated_pages(id, title, rating, time) VALUES(?, ?, ?, ?)";
+
+    Connection connection = DriverManager.getConnection(URL);
+    PreparedStatement pstmt = connection.prepareStatement(sql);
+    pstmt.setInt(1, id);
+    pstmt.setString(2, title);
+    pstmt.setInt(3, rating);
+    pstmt.setString(4, timestamp);
+    pstmt.executeUpdate();
+
+    pstmt.close();
+    connection.close();
+  }
+  public static void updateRatedPage(int id, String title, int rating, String timestamp) throws SQLException{
+    String sql = "UPDATE rated_pages SET title = ?, rating = ?, time = ? WHERE id = ?";
+
+    Connection connection = DriverManager.getConnection(URL);
+    PreparedStatement pstmt = connection.prepareStatement(sql);
+
+    pstmt.setString(1, title);
+    pstmt.setInt(2, rating);
+    pstmt.setString(3, timestamp);
+    pstmt.setInt(4, id);
+    pstmt.executeUpdate();
+
+    pstmt.close();
+    connection.close();
+  }
+
+    public static ArrayList<RatedWikiPage> getRatedPages() throws SQLException {
+      ArrayList<RatedWikiPage> ratedPages = new ArrayList<>();
+      Connection connection = DriverManager.getConnection(URL);
+      String sql = "SELECT * FROM rated_pages";
+      PreparedStatement preparedStatement = connection.prepareStatement(sql);
+      ResultSet rs = preparedStatement.executeQuery();
+
+      while (rs.next()) {
+        ratedPages.add(new RatedWikiPage(rs.getString("title")
+                , rs.getString("id")
+                , rs.getInt("rating")
+                , rs.getTimestamp("time")));
+      }
+
+      rs.close();
+      preparedStatement.close();
+      connection.close();
+
+      return ratedPages;
+    }
 }

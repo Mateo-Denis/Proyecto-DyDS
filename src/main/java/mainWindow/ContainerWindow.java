@@ -1,5 +1,6 @@
 package mainWindow;
 
+import views.ratingView.RatingView;
 import views.searchView.SearchView;
 import views.storageView.StorageView;
 
@@ -13,6 +14,8 @@ public class ContainerWindow{
 	private JPanel StorageTab;
 	private SearchView searchViewTab;
 	private JPanel SearchTab;
+	private RatingView ratingViewTab;
+	private JPanel RatingTab;
 
 	public ContainerWindow() {
 		windowFrame = new JFrame("TV Series Info Repo");
@@ -26,8 +29,13 @@ public class ContainerWindow{
 	public SearchView getSearchViewTab() {
 		return searchViewTab;
 	}
-
 	public StorageView getStorageViewTab() {
 		return storageViewTab;
+	}
+	public RatingView getRatingViewTab() {
+		return ratingViewTab;
+	}
+	public JTabbedPane getContainerTabbedPane() {
+		return containerTabbedPane;
 	}
 }

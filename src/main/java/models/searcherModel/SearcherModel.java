@@ -1,4 +1,4 @@
-package models.searchModel;
+package models.searcherModel;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -7,7 +7,7 @@ import com.google.gson.JsonObject;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
-import exceptions.WikiAPIRequestException;
+import utils.exceptions.WikiAPIRequestException;
 import utils.SearchResult;
 import utils.wiki.WikipediaPageAPI;
 import utils.wiki.WikipediaSearchAPI;
@@ -16,12 +16,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchModel implements ISearchModel{
+public class SearcherModel implements ISearcherModel {
 
 	private final WikipediaSearchAPI searchAPI;
 	private final WikipediaPageAPI pageAPI;
 
-	public SearchModel() {
+	public SearcherModel() {
 		Retrofit retrofit = new Retrofit.Builder()
 				.baseUrl("https://en.wikipedia.org/w/")
 				.addConverterFactory(ScalarsConverterFactory.create())
