@@ -1,4 +1,4 @@
-package models.listeners.database.failure;
+package models.listeners;
 
 public interface FailedOperation {
 	public void onFailure();

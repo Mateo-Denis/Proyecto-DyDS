@@ -4,10 +4,8 @@ import models.listeners.database.failure.AccessFailureListener;
 import models.listeners.database.failure.PageDeleteFailureListener;
 import models.listeners.database.failure.PageSaveFailureListener;
 import models.listeners.database.failure.RatingSaveFailureListener;
-import models.listeners.database.success.PageDeleteSuccessListener;
-import models.listeners.database.success.PageSaveSuccessListener;
-import models.listeners.search.RatedSearchHasFinishedListener;
-import models.listeners.database.success.RatingSaveSuccessListener;
+import models.listeners.database.success.*;
+import models.listeners.wikisearch.RatedSearchHasFinishedListener;
 import utils.wiki.RatedWikiPage;
 
 import javax.swing.*;
@@ -30,8 +28,18 @@ public interface IStorerModel {
 
 	void addRatedSearchHasFinishedListener(RatedSearchHasFinishedListener listener);
 
-	List<String> getSavedTitles();
-	String getSavedExtract(String title);
+	void addTitlesAccessSuccessListener(TitlesAccessSuccessListener listener);
+
+	void addExtractAccessSuccessListener(ExtractAccessSuccessListener listener);
+
+	void getSavedTitles();
+
+	List<String> getLastSavedTitles();
+
+	void getSavedExtract(String title);
+
+	String getLastSavedExtract();
+
 	void saveInfo(String title, String text);
 	void deleteEntry(String title);
 
@@ -41,4 +49,5 @@ public interface IStorerModel {
 	int getRating(String pageID);
 
 	DefaultListModel<RatedWikiPage> getRatedSeriesModel();
+
 }

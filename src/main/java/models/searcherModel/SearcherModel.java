@@ -1,18 +1,10 @@
 package models.searcherModel;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import models.listeners.search.RatedSeriesDoubleClickedListener;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.scalars.ScalarsConverterFactory;
-import utils.exceptions.WikiAPIRequestException;
+import models.listeners.wikisearch.RatedSeriesDoubleClickedListener;
+import models.listeners.wikisearch.WikiSearchFailureListener;
 import utils.SearchResult;
 import utils.wiki.RatedWikiPage;
-import utils.wiki.WikipediaPageAPI;
-import utils.wiki.WikipediaSearchAPI;
+import utils.wiki.WikiAPIConsummer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,25 +13,24 @@ import java.util.List;
 public class SearcherModel implements ISearcherModel {
 
 	private final List<RatedSeriesDoubleClickedListener> ratedSeriesDoubleClickedListeners = new ArrayList<>();
+	private final List<WikiSearchFailureListener> wikiSearchFaiulreListeners = new ArrayList<>();
 	private List<SearchResult> searchResultsForLastTerm;
 	private String extractForLastPageSearched;
-	private final WikipediaSearchAPI searchAPI;
-	private final WikipediaPageAPI pageAPI;
+	private final WikiAPIConsummer wikiAPIConsummer;
 
-	public SearcherModel() {
-		Retrofit retrofit = new Retrofit.Builder()
-				.baseUrl("https://en.wikipedia.org/w/")
-				.addConverterFactory(ScalarsConverterFactory.create())
-				.build();
-
-		searchAPI = retrofit.create(WikipediaSearchAPI.class);
-		pageAPI = retrofit.create(WikipediaPageAPI.class);
+	public SearcherModel(WikiAPIConsummer wikiAPIConsummer) {
+		this.wikiAPIConsummer = wikiAPIConsummer;
 	}
 
 	@Override
 	public void addRatedSeriesDoubleClickedListener(RatedSeriesDoubleClickedListener listener) {
 		ratedSeriesDoubleClickedListeners.add(listener);
 	}
+	@Override
+	public void addWikiSearchFailureListener(WikiSearchFailureListener listener) {
+		wikiSearchFaiulreListeners.add(listener);
+	}
+
 
 	private void notifyRatedSeriesDoubleClickedListeners(RatedWikiPage ratedWikiPage){
 		for (RatedSeriesDoubleClickedListener listener: ratedSeriesDoubleClickedListeners) {
@@ -47,28 +38,19 @@ public class SearcherModel implements ISearcherModel {
 		}
 	}
 
+	private void notifyWikiSearchFailure() {
+		for (WikiSearchFailureListener listener: wikiSearchFaiulreListeners) {
+			listener.onFailure();
+		}
+	}
+
 
 	@Override
-	public void searchForTerm(String term) throws WikiAPIRequestException {
-		Response<String> callForSearchResponse;
+	public void searchForTerm(String term) {
 		try {
-			callForSearchResponse = searchAPI.searchForTerm(term + " (Tv series) articletopic:\"television\"").execute();
-			Gson gson = new Gson();
-			JsonObject jobj = gson.fromJson(callForSearchResponse.body(), JsonObject.class);
-			JsonObject query = jobj.get("query").getAsJsonObject();
-			JsonArray jsonResults = query.get("search").getAsJsonArray();
-
-			List<SearchResult> results = new ArrayList<>();
-			for (JsonElement je : jsonResults) {
-				JsonObject searchResult = je.getAsJsonObject();
-				String searchResultTitle = searchResult.get("title").getAsString();
-				String searchResultPageId = searchResult.get("pageid").getAsString();
-				String searchResultSnippet = searchResult.get("snippet").getAsString();
-				results.add(new SearchResult(searchResultTitle, searchResultPageId, searchResultSnippet));
-			}
-			searchResultsForLastTerm = results;
+		searchResultsForLastTerm = wikiAPIConsummer.searchForTerm(term);
 		} catch (IOException e) {
-			throw new WikiAPIRequestException(e.getMessage());
+			notifyWikiSearchFailure();
 		}
 	}
 	@Override
@@ -77,18 +59,11 @@ public class SearcherModel implements ISearcherModel {
 	}
 
 	@Override
-	public void getExtractByPageID(String pageID) throws WikiAPIRequestException {
+	public void getExtractByPageID(String pageID) {
 		try {
-			Response<String> callForPageResponse = pageAPI.getExtractByPageID(pageID).execute();
-			Gson gson = new Gson();
-			JsonObject jobj2 = gson.fromJson(callForPageResponse.body(), JsonObject.class);
-			JsonObject query2 = jobj2.get("query").getAsJsonObject();
-			JsonObject pages = query2.get("pages").getAsJsonObject();
-			JsonObject page = pages.entrySet().iterator().next().getValue().getAsJsonObject();
-			JsonElement searchResultExtract2 = page.get("extract");
-			extractForLastPageSearched = searchResultExtract2 != null ? searchResultExtract2.getAsString().replace("\\n", "\n") : "No Results";
+			extractForLastPageSearched = wikiAPIConsummer.getExtractByPageID(pageID);
 		} catch (IOException e) {
-			throw new WikiAPIRequestException(e.getMessage());
+			notifyWikiSearchFailure();
 		}
 	}
 	@Override

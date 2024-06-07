@@ -1,4 +1,4 @@
-package models.listeners.database.success;
+package models.listeners;
 
 public interface SuccessfulOperation {
 	public void onSuccess();

@@ -1,4 +1,4 @@
-package models.listeners.search;
+package models.listeners.wikisearch;
 
 import utils.wiki.RatedWikiPage;
 

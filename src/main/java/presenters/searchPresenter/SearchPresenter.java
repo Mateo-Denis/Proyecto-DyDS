@@ -3,7 +3,6 @@ package presenters.searchPresenter;
 import mainWindow.ContainerWindow;
 import models.searcherModel.ISearcherModel;
 import models.storerModel.IStorerModel;
-import models.listeners.search.RatedSeriesDoubleClickedListener;
 import utils.exceptions.WikiAPIRequestException;
 import utils.HTMLFormatter;
 import utils.SearchResult;
@@ -13,6 +12,7 @@ import views.searchView.ISearchView;
 import static utils.MessageTypes.*;
 
 import javax.swing.*;
+import java.awt.*;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -22,6 +22,7 @@ public class SearchPresenter implements ISearchPresenter{
 	private final ISearcherModel searcherModel;
 	private final IStorerModel storerModel;
 	private ContainerWindow containerWindow;
+
 	public SearchPresenter(ISearcherModel searcherModel, IStorerModel storerModel, ISearchView searchView, ContainerWindow containerWindow) {
 		this.searcherModel = searcherModel;
 		this.storerModel = storerModel;
@@ -45,6 +46,8 @@ public class SearchPresenter implements ISearchPresenter{
 		});
 
 		storerModel.addRatingSaveFailureListener(() -> searchView.showMessage(RATING_SAVE_FAILURE));
+
+		searcherModel.addWikiSearchFailureListener(() -> searchView.showMessage(PAGE_SEARCH_FAILURE));
 
 		searcherModel.addRatedSeriesDoubleClickedListener((ratedSeries) -> {
 			try{
@@ -71,6 +74,7 @@ public class SearchPresenter implements ISearchPresenter{
 				for (SearchResult sr : results) {
 					JMenuItem menuItem = new JMenuItem(HTMLFormatter.searchResultToHtml(sr));
 					menuItem.addActionListener(e -> onSearchResultClicked(sr));
+					setMenuItenIcon(menuItem, storerModel.getRating(sr.getPageID()));
 					searchOptionsMenu.add(menuItem);
 				}
 				searchView.showSearchResultsPopup(searchOptionsMenu);
@@ -79,6 +83,21 @@ public class SearchPresenter implements ISearchPresenter{
 			}
 			searchView.setWaitingStatus();
 		}).start();
+	}
+
+	private void setMenuItenIcon(JMenuItem menuItem, int rating){
+		if(rating != -1){
+			menuItem.setIcon(new ImageIcon(resizeImage("src/main/resources/rated_icon.png", 20, 20)));
+		}else {
+			menuItem.setIcon(new ImageIcon(resizeImage("src/main/resources/unrated_icon.png", 20, 20)));
+		}
+	}
+
+	private Image resizeImage(String path, int width, int height){
+		ImageIcon icon = new ImageIcon(path);
+		Image img = icon.getImage();
+		Image newImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+		return newImg;
 	}
 
 	@Override
@@ -102,7 +121,8 @@ public class SearchPresenter implements ISearchPresenter{
 		searcherModel.getExtractByPageID(pageID);
 		extract = searcherModel.getExtractOfLastPageSearched();
 
-		textToShow = "<h1>" + title + "</h1>" + HTMLFormatter.textToHtml(extract);
+		textToShow = "<h1>" + title + "</h1>"
+				+ HTMLFormatter.textToHtml(extract);
 		searchView.setCurrentPage(title, extract, pageID);
 		searchView.showSearchResult(textToShow);
 		int rating = storerModel.getRating(pageID);

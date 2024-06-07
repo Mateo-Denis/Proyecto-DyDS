@@ -1,4 +1,6 @@
 package models.listeners.database.failure;
 
-public interface PageSaveFailureListener extends FailedOperation{
+import models.listeners.FailedOperation;
+
+public interface PageSaveFailureListener extends FailedOperation {
 }

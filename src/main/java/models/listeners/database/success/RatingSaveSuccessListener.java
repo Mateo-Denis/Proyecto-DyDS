@@ -1,4 +1,6 @@
 package models.listeners.database.success;
 
-public interface RatingSaveSuccessListener extends SuccessfulOperation{
+import models.listeners.SuccessfulOperation;
+
+public interface RatingSaveSuccessListener extends SuccessfulOperation {
 }

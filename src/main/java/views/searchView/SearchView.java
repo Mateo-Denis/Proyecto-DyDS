@@ -102,11 +102,6 @@ public class SearchView extends JComponent implements ISearchView {
 		for (Component c : this.searchPanel.getComponents()) c.setEnabled(true);
 		searchResultPane.setEnabled(true);
 	}
-
-	public JPanel getSearchPanel() {
-		return searchPanel;
-	}
-
 	private void createUIComponents() {
 		isRatedIndicator = new IsRatedImagePanel();
 	}

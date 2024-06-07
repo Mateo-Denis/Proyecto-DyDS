@@ -1,6 +1,7 @@
 package models.storerModel;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,10 +10,8 @@ import models.listeners.database.failure.AccessFailureListener;
 import models.listeners.database.failure.PageDeleteFailureListener;
 import models.listeners.database.failure.PageSaveFailureListener;
 import models.listeners.database.failure.RatingSaveFailureListener;
-import models.listeners.database.success.PageDeleteSuccessListener;
-import models.listeners.database.success.PageSaveSuccessListener;
-import models.listeners.database.success.RatingSaveSuccessListener;
-import models.listeners.search.RatedSearchHasFinishedListener;
+import models.listeners.database.success.*;
+import models.listeners.wikisearch.RatedSearchHasFinishedListener;
 import utils.DataBase;
 import utils.wiki.RatedWikiPage;
 
@@ -29,7 +28,11 @@ public class StorerModel implements IStorerModel {
 	private final List<RatingSaveSuccessListener> ratingSaveSuccessListeners;
 	private final List<RatingSaveFailureListener> ratingSaveFailureListeners;
 	private final List<RatedSearchHasFinishedListener> ratedSearchHasFinishedListeners;
+	private final List<TitlesAccessSuccessListener> titlesAccessSuccessListeners;
+	private final List<ExtractAccessSuccessListener> extractAccessSuccessListeners;
 	private DefaultListModel<RatedWikiPage> ratedSeries;
+	private String lastSevedExtract;
+	private ArrayList<String> lastSavedTitles;
 	public StorerModel() {
 		this.accessFailureListeners = new LinkedList<>();
 		this.saveSuccessListeners = new LinkedList<>();
@@ -39,6 +42,8 @@ public class StorerModel implements IStorerModel {
 		this.ratingSaveSuccessListeners = new LinkedList<>();
 		this.ratingSaveFailureListeners = new LinkedList<>();
 		this.ratedSearchHasFinishedListeners = new LinkedList<>();
+		this.titlesAccessSuccessListeners = new LinkedList<>();
+		this.extractAccessSuccessListeners = new LinkedList<>();
 	}
 
 	@Override
@@ -76,6 +81,14 @@ public class StorerModel implements IStorerModel {
 
 	public void addRatedSearchHasFinishedListener(RatedSearchHasFinishedListener listener) {
 		ratedSearchHasFinishedListeners.add(listener);
+	}
+
+	public void addTitlesAccessSuccessListener(TitlesAccessSuccessListener listener) {
+		titlesAccessSuccessListeners.add(listener);
+	}
+
+	public void addExtractAccessSuccessListener(ExtractAccessSuccessListener listener) {
+		extractAccessSuccessListeners.add(listener);
 	}
 
 	private void notifyAccessFailed() {
@@ -124,27 +137,48 @@ public class StorerModel implements IStorerModel {
 			listener.onSuccess();
 		}
 	}
-
-
-
-	@Override
-	public List<String> getSavedTitles() {
-		try {
-			return DataBase.getTitles();
-		} catch (SQLException e) {
-			notifyAccessFailed();
-			return null;
+	private void notifyTitlesAccessSuccess() {
+		for (TitlesAccessSuccessListener listener: titlesAccessSuccessListeners) {
+			listener.onSuccess();
 		}
 	}
 
-	@Override
-	public String getSavedExtract(String title) {
-		try {
-			return DataBase.getExtract(title);
-		} catch (SQLException e) {
-			notifyAccessFailed();
-			return null;
+	private void notifyExtractAccessSuccess() {
+		for (ExtractAccessSuccessListener listener: extractAccessSuccessListeners) {
+			listener.onSuccess();
 		}
+	}
+
+
+
+	@Override
+	public void getSavedTitles() {
+		try {
+			lastSavedTitles = DataBase.getTitles();
+			notifyTitlesAccessSuccess();
+		} catch (SQLException e) {
+			lastSavedTitles = null;
+			notifyAccessFailed();
+		}
+	}
+	@Override
+	public ArrayList<String> getLastSavedTitles() {
+		return lastSavedTitles;
+	}
+
+	@Override
+	public void getSavedExtract(String title) {
+		try {
+			lastSevedExtract = DataBase.getExtract(title);
+			notifyExtractAccessSuccess();
+		} catch (SQLException e) {
+			lastSevedExtract = null;
+			notifyAccessFailed();
+		}
+	}
+	@Override
+	public String getLastSavedExtract() {
+		return lastSevedExtract;
 	}
 
 	@Override

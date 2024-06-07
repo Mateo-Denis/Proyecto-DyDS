@@ -6,6 +6,7 @@ import presenters.ratingPresenter.RatingPresenter;
 import presenters.searchPresenter.SearchPresenter;
 import presenters.storagePresenter.StoragePresenter;
 import utils.DataBase;
+import utils.wiki.WikiAPIConsummer;
 import views.ratingView.RatingView;
 import views.searchView.SearchView;
 import views.storageView.StorageView;
@@ -17,7 +18,7 @@ public class Main {
 		DataBase.loadDatabase();
 
 
-		SearcherModel searchModel = new SearcherModel();
+		SearcherModel searchModel = new SearcherModel(new WikiAPIConsummer());
 		StorerModel storageModel = new StorerModel();
 
 		SearchView searchView = containerWindow.getSearchViewTab();
